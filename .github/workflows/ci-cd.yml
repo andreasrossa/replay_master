@@ -81,6 +81,9 @@ jobs:
             arch: arm64
     
     runs-on: ${{ matrix.os }}
+
+    permissions:
+      packages: write
     
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
@@ -155,25 +158,12 @@ jobs:
       security-events: write
 
     steps:
-      - name: Run Trivy vulnerability scanner (AMD64)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ghcr.io/${{ github.repository }}:latest
-          format: 'sarif'
-          output: 'trivy-results-amd64.sarif'
-
       - name: Run Trivy vulnerability scanner (ARM64)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ghcr.io/${{ github.repository }}:latest
           format: 'sarif'
           output: 'trivy-results-arm64.sarif'
-
-      - name: Upload AMD64 Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
-        with:
-          sarif_file: 'trivy-results-amd64.sarif'
 
       - name: Upload ARM64 Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
