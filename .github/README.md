@@ -4,6 +4,14 @@ This repository includes a comprehensive CI/CD pipeline that runs tests, builds 
 
 ## Workflow Overview
 
+The pipeline uses GitHub's native runners with a matrix strategy for optimal performance and stability:
+
+### Architecture Matrix Strategy
+- **AMD64**: Built on `ubuntu-latest` (GitHub's hosted AMD64 runners)
+- **ARM64**: Built on `[self-hosted, linux, arm64]` (GitHub's native ARM64 runners)
+- **No QEMU**: Eliminates segmentation faults and emulation overhead
+- **Parallel Builds**: Both architectures build simultaneously for faster CI
+
 The pipeline consists of four main jobs:
 
 ### 1. Test Job
@@ -15,22 +23,25 @@ The pipeline consists of four main jobs:
   - Runs the full test suite with database integration
   - Uses PostgreSQL 15 as the test database
 
-### 2. Build Job
+### 2. Build Job (Matrix Strategy)
 - **Triggers**: Only on pushes to `main` or `develop` branches
 - **Dependencies**: Requires test job to pass
+- **Matrix Strategy**: Runs on native runners for each architecture
 - **Actions**:
-  - Builds multi-platform Docker image (AMD64/ARM64)
+  - AMD64: Built on GitHub's hosted `ubuntu-latest` runners
+  - ARM64: Built on GitHub's native ARM64 runners `[self-hosted, linux, arm64]`
   - Pushes to GitHub Container Registry (ghcr.io)
   - Uses Docker Buildx for advanced build features
   - Implements layer caching for faster builds
+  - **No QEMU emulation** - eliminates segmentation faults
 
 ### 3. Security Scan Job
 - **Triggers**: Only on pushes to `main` or `develop` branches
 - **Dependencies**: Requires build job to complete
 - **Actions**:
-  - Runs Trivy vulnerability scanner on the Docker image
+  - Runs Trivy vulnerability scanner on both AMD64 and ARM64 images
   - Uploads security scan results to GitHub Security tab
-  - Provides detailed security reports
+  - Provides detailed security reports for both architectures
 
 ### 4. Deploy Job
 - **Triggers**: Only on pushes to `main` branch
@@ -39,6 +50,20 @@ The pipeline consists of four main jobs:
 - **Actions**:
   - Placeholder for production deployment
   - Can be customized for your deployment strategy
+
+## Native Runner Benefits
+
+### Why Native Runners?
+- **🚀 Performance**: Native ARM64 builds are 3-5x faster than QEMU emulation
+- **🛡️ Stability**: Eliminates segmentation faults and emulation issues
+- **⚡ Parallel**: Both architectures build simultaneously
+- **💰 Cost Effective**: No emulation overhead means faster, cheaper builds
+- **🔧 Reliability**: Native compilation produces more reliable binaries
+
+### Runner Configuration
+- **AMD64**: Uses GitHub's hosted `ubuntu-latest` runners (always available)
+- **ARM64**: Uses GitHub's native ARM64 runners `[self-hosted, linux, arm64]`
+- **Matrix Strategy**: Each architecture runs on its optimal platform
 
 ## Required GitHub Secrets
 
@@ -122,22 +147,28 @@ The test job uses PostgreSQL 15 with these settings:
 
 ### Common Issues
 
-1. **Test Failures**
+1. **ARM64 Runner Availability**
+   - **Issue**: ARM64 builds may queue if GitHub's ARM64 runners are busy
+   - **Solution**: ARM64 builds will wait for available runners, AMD64 builds continue normally
+   - **Note**: This is rare and usually resolves within minutes
+
+2. **Test Failures**
    - Check database connection in test logs
    - Verify all dependencies are properly installed
    - Ensure test environment variables are correct
 
-2. **Build Failures**
+3. **Build Failures**
    - Check Dockerfile syntax and dependencies
    - Verify all required files are present
    - Check for platform-specific build issues
+   - Review the build context inspection output
 
-3. **Security Scan Failures**
+4. **Security Scan Failures**
    - Review vulnerability reports in Security tab
    - Update base images or dependencies as needed
    - Consider adding exceptions for false positives
 
-4. **Deployment Failures**
+5. **Deployment Failures**
    - Verify deployment commands and permissions
    - Check environment-specific configurations
    - Ensure target environment is accessible
