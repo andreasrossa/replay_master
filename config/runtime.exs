@@ -65,6 +65,7 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :replay_master, dev_routes: System.get_env("ENABLE_DASHBOARD", "false") == "true"
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key
