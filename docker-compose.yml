@@ -21,6 +21,7 @@ services:
     image: ghcr.io/andreasrossa/replay_master:latest
     container_name: replay_master_app
     restart: unless-stopped
+    platform: linux/arm64
     environment:
       DATABASE_URL: "ecto://postgres:postgres@db:5432/replay_master_dev"
       SECRET_KEY_BASE: "djapodjaowdjiojefoiesjfosjefoisjeofijsoefjsojfeojpfojwafjweoifjaweoijf2983ur948"
@@ -31,8 +32,5 @@ services:
       db:
         condition: service_healthy
 
-  
 volumes:
   db_data:
-
-
