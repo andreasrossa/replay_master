@@ -65,7 +65,6 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  config :replay_master, dev_routes: System.get_env("ENABLE_DASHBOARD", "false") == "true"
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key
@@ -115,4 +114,23 @@ if config_env() == :prod do
   #     config :swoosh, :api_client, Swoosh.ApiClient.Hackney
   #
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
+
+  # libcluster
+  selector = System.get_env("LIBCLUSTER_SELECTOR")
+  namespace = System.get_env("KUBERNETES_NAMESPACE")
+
+  config :libcluster,
+    topologies: [
+      k8s: [
+        strategy: Cluster.Strategy.Kubernetes,
+        config: [
+          mode: :ip,
+          kubernetes_ip_lookup_mode: :pods,
+          kubernetes_node_basename: "replay-master",
+          kubernetes_selector: selector,
+          kubernetes_namespace: namespace,
+          polling_interval: 10_000
+        ]
+      ]
+    ]
 end
