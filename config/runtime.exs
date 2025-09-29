@@ -126,7 +126,7 @@ if config_env() == :prod do
         config: [
           mode: :ip,
           kubernetes_ip_lookup_mode: :endpoints,
-          kubernetes_node_basename: "replay-master",
+          kubernetes_node_basename: "replay_master",
           kubernetes_selector: selector,
           kubernetes_namespace: namespace,
           polling_interval: 10_000
