@@ -125,7 +125,7 @@ if config_env() == :prod do
         strategy: Cluster.Strategy.Kubernetes,
         config: [
           mode: :ip,
-          kubernetes_ip_lookup_mode: :endpoints,
+          kubernetes_ip_lookup_mode: :pods,
           kubernetes_node_basename: "replay_master",
           kubernetes_selector: selector,
           kubernetes_namespace: namespace,
